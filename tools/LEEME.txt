@@ -1,0 +1,31 @@
+YŪGURE · 夕暮れ — alpha 0.3
+================================
+
+CÓMO JUGAR
+  Abre YUGURE.html con Chrome, Edge o Firefox (doble clic). No necesita instalación ni internet.
+
+CONTROLES
+  Flechas / WASD ........ moverse en cualquier dirección
+  Espacio ............... saltar (mantener = más alto; con Planeo, mantener al caer)
+  Clic en el aire ....... impulso apuntado con el ratón, a cámara lenta (uno por salto)
+  Contra un borde ....... te cuelgas; Espacio o empujar hacia la pared = subir
+  Llegar corriendo ...... superas el borde de un salto y sales con impulso
+  Esc ................... calidad gráfica (Bajo / Medio / Alto / Ultra)
+  P ..................... foto
+
+LO QUE HAY
+  · Intro: el bongazo, la oscuridad sale y la compuerta gigante revienta.
+  · Aldea japonesa infinita medio tragada por la jungla; vecinos, puestos y farolillos.
+  · La tormenta te persigue y quita vida; acelerones con aviso y «¡Por los pelos!».
+  · Flujo: sin tocar el suelo de la calle corres más rápido (FLUJO I–V).
+  · Túneles de torii cada ~450 m: cambias de barrio y ganas unos segundos de respiro.
+  · Sombrillas que rebotan según tu velocidad, banderas de templo, andamios, vigas
+    entre casas, objetos flotantes, columnas del cielo con multiplicador de puntos.
+  · Mejoras permanentes cada 150 m: doble salto, planeo, doble impulso...
+
+REQUISITOS
+  Navegador con WebGL2. En gráficas integradas (Intel UHD/Iris) usa calidad Baja.
+  La primera carga tarda unos segundos más (genera el cuerpo del personaje).
+
+ESTADO
+  Alpha jugable. En camino: dimensión oscura con portal, dragones y sonido.
