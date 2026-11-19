@@ -70,8 +70,11 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
   crows.frustumCulled = false; crows.count = nc; root.add(crows);
   const birds = Array.from({ length: nc }, () => ({ ph: r(), x: (r() - 0.5) * 9, y: 3.6 + r() * 5, sp: 0.55 + r() * 0.35, sc: 0.6 + r() * 0.5 }));
 
-  function update(t: number, player: THREE.Vector3, danger: number) {
-    const pz = player.z, py = player.y;
+  const FAR = new THREE.Vector3(0, -9999, 0);
+  /** anchorY: altura de la calle suavizada (no sigue los saltos) · cam: posición de la cámara, para no pasarle por delante */
+  function update(t: number, player: THREE.Vector3, danger: number, anchorY = player.y, cam: THREE.Vector3 = FAR) {
+    const pz = player.z, py = anchorY;
+    const nearCam = (p: THREE.Vector3, r: number) => p.distanceToSquared(cam) < r * r;
     // fauces: entran desde atrás y por los lados a partir de 0,5 de peligro
     const kJ = ss(danger, 0.5, 0.92);
     for (let i = 0; i < nj; i++) {
@@ -111,7 +114,7 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
       for (let s = 0; s < S; s++) {
         const a = pts[s], b = pts[s + 1];
         dir.subVectors(b, a); const len = Math.max(0.001, dir.length()); dir.divideScalar(len);
-        const rad = tn.rad * (1 - s / S * 0.75) * Math.min(1, reach * 4);
+        const rad = nearCam(a, 3.5) || nearCam(b, 3.5) ? 0.001 : tn.rad * (1 - s / S * 0.75) * Math.min(1, reach * 4);
         _q.setFromUnitVectors(Y, dir);
         segs.setMatrixAt(i * S + s, A.compose(a, _q, _s.set(Math.max(0.001, rad), len, Math.max(0.001, rad))));
       }
@@ -128,7 +131,7 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
       const b = birds[i], ph = (t * b.sp * 0.35 + b.ph) % 1;
       bp.set(cx + b.x + Math.sin(t * 2 + i) * 0.6, py + b.y + Math.sin(t * 3 + i) * 0.4, pz + 12 - ph * 60);
       dummy.position.copy(bp); dummy.lookAt(bp.x, bp.y - 0.3, bp.z - 1); dummy.rotateY(Math.PI);
-      dummy.scale.setScalar(b.sc * Math.max(0.001, kC));
+      dummy.scale.setScalar(nearCam(bp, 5) ? 0.0001 : b.sc * Math.max(0.001, kC));
       dummy.updateMatrix(); crows.setMatrixAt(i, dummy.matrix);
     }
     crows.instanceMatrix.needsUpdate = true;

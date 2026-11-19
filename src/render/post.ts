@@ -130,7 +130,13 @@ const Finish = {
         float sm = smoothstep(0.62 - 0.22 * uSmoke - 0.05 * uBeat, 0.76, ed) * uSmoke;
         c = mix(c, vec3(0.012, 0.004, 0.02), clamp(sm, 0.0, 0.95));
       }
-      c *= 1.0 - 0.04 * uBeat;
+      // ansiedad continua al acercarse la tormenta: visión de túnel, color apagado y latido rojizo en los bordes
+      float anx = smoothstep(0.3, 1.0, uDanger) * (1.0 - uStorm * 0.5);
+      float edg = smoothstep(0.18, 0.78, length(cc * vec2(1.2, 1.0)));
+      float la = dot(c, vec3(0.2126, 0.7152, 0.0722));
+      c = mix(c, vec3(la) * vec3(0.95, 0.92, 1.0), anx * 0.3);
+      c *= 1.0 - anx * 0.38 * edg;
+      c += vec3(0.16, 0.0, 0.03) * anx * uBeat * edg;
       c *= 1.0 - 0.42 * pow(length(cc * vec2(1.05, 1.0)) * 1.32, 2.6);
       c = pow(max(c, 0.0), vec3(1.0 / 2.2));
       float n = fract(sin(dot(gl_FragCoord.xy + fract(uTime) * 61.0, vec2(12.9898, 78.233))) * 43758.5453);

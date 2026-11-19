@@ -134,6 +134,7 @@ export function createStorm(st: Stage, mats: Mats, kit: ArchKit, quality: Qualit
   const dummy = new THREE.Object3D();
   const flashEnv = (d: number) => (d < 0 ? 0 : Math.exp(-d * 9) + (d > 0.13 ? 0.7 * Math.exp(-(d - 0.13) * 11) : 0));
 
+  let anchorY = 0;
   function update(t: number, dt: number, s: StormState) {
     const fz = s.frontZ, danger = THREE.MathUtils.clamp(s.danger, 0, 1), ins = THREE.MathUtils.clamp(s.inside, 0, 1);
     front.position.z = fz;
@@ -156,7 +157,9 @@ export function createStorm(st: Stage, mats: Mats, kit: ArchKit, quality: Qualit
     wallMat.uniforms.uNear.value = 16 - 9 * ins;
     curtainM.uniforms.uAlpha.value = 0.4 + 0.6 * show;
     monsters.update(t, fz, danger, show);
-    chase.update(t, s.player, danger * show);
+    // altura de referencia de la calle: sigue al jugador muy despacio para que nada salte con él
+    anchorY += (s.player.y - anchorY) * Math.min(1, dt * 0.5);
+    chase.update(t, s.player, danger * show, anchorY, st.camera.position);
     // techo de oscuridad: avanza por delante del jugador y baja con el peligro
     const kc = THREE.MathUtils.smoothstep(danger, 0.1, 1);
     const lead = Math.min(fz - 26, s.player.z - 240 * kc);
@@ -179,7 +182,7 @@ export function createStorm(st: Stage, mats: Mats, kit: ArchKit, quality: Qualit
         it.e.set(it.e.x + it.w.x * dt, it.e.y + it.w.y * dt, it.e.z + it.w.z * dt);
         if (it.p.y < 0.05 || it.p.z < fz - 45 || it.p.z > fz + 25) respawn(it, fz, d.sp);
         dummy.position.copy(it.p); dummy.rotation.copy(it.e);
-        dummy.scale.setScalar(it.on < wind ? 1 : 0.0001);
+        dummy.scale.setScalar(it.on < wind && it.p.distanceToSquared(st.camera.position) > 20 ? 1 : 0.0001);
         dummy.updateMatrix(); d.im.setMatrixAt(i, dummy.matrix);
       }
       d.im.instanceMatrix.needsUpdate = true;
@@ -202,9 +205,9 @@ export function createStorm(st: Stage, mats: Mats, kit: ArchKit, quality: Qualit
       fin.uHurt.value = THREE.MathUtils.clamp((1 - s.life) * 1.15, 0, 1);
       fin.uFlash.value = flash * 0.5 * (0.25 + 0.75 * Math.max(danger, ins));
       fin.uRain.value = ins;
-      const kb = THREE.MathUtils.smoothstep(danger, 0.78, 1) * show;
-      const bt = (t * 1.25) % 1;
-      if (fin.uSmoke) fin.uSmoke.value = Math.max(kb, ins * 0.8);
+      const kb = THREE.MathUtils.smoothstep(danger, 0.5, 1) * show;
+      const bt = (t * (0.9 + 0.7 * danger)) % 1;   // el latido se acelera al acercarse
+      if (fin.uSmoke) fin.uSmoke.value = Math.max(kb * 0.7, ins * 0.8);
       if (fin.uBeat) fin.uBeat.value = kb * (Math.exp(-bt * 14) + 0.6 * Math.exp(-Math.max(0, bt - 0.2) * 14) * (bt > 0.2 ? 1 : 0));
     }
   }

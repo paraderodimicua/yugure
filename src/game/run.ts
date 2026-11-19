@@ -10,7 +10,7 @@ import type { createStreet, PowerKind } from './street';
 import { createFx } from './fx';
 import { createTrail } from '../player/trail';
 import { createPillars } from './pillars';
-import type { Physics } from './physics';
+import { topAt, type Physics } from './physics';
 import { createPlayer, BASE_UP, type Upgrades, type PMode } from './player';
 import type { Hud } from './hud';
 import type { StormState, Collider } from './contracts';
@@ -274,6 +274,37 @@ export function createRun(st: Stage, mats: Mats, street: Street, hud: Hud, physi
     hud.over(dist, best);
   }
 
+  // ---------------------------------------------------------------- cámara que no atraviesa paredes
+  const HEAD = new THREE.Vector3(), RAY = new THREE.Vector3();
+  /** Si hay una casa, un alero o un tejado entre la cabeza del personaje y la cámara, la acerca. */
+  function clipCamera(P: THREE.Vector3) {
+    HEAD.set(P.x, P.y + 1.5, P.z);
+    RAY.subVectors(camPos, HEAD);
+    let best = 1;
+    for (const c of physics.near(P.z + 3, 7)) {
+      if (c.kind !== 'box') continue;
+      let t0 = 0, t1 = 1, ok = true;
+      for (const ax of ['x', 'y', 'z'] as const) {
+        const o = HEAD[ax], d = RAY[ax], lo = c.min[ax] - 0.25, hi = c.max[ax] + 0.25;
+        if (Math.abs(d) < 1e-6) { if (o < lo || o > hi) { ok = false; break; } continue; }
+        let a = (lo - o) / d, b = (hi - o) / d; if (a > b) { const k = a; a = b; b = k; }
+        t0 = Math.max(t0, a); t1 = Math.min(t1, b); if (t0 > t1) { ok = false; break; }
+      }
+      if (!ok || t0 >= best) continue;
+      if (c.slope) {
+        // en un tejado inclinado solo cuenta si el rayo pasa por debajo de la superficie
+        let under = false;
+        for (let k = 0; k <= 4 && !under; k++) {
+          const tt = t0 + (t1 - t0) * (k / 4), x = HEAD.x + RAY.x * tt, y = HEAD.y + RAY.y * tt, z = HEAD.z + RAY.z * tt;
+          if (y < topAt(c, THREE.MathUtils.clamp(x, c.min.x, c.max.x), THREE.MathUtils.clamp(z, c.min.z, c.max.z)) + 0.2) { under = true; best = Math.min(best, tt); }
+        }
+        continue;
+      }
+      best = t0;
+    }
+    if (best < 1) camPos.copy(HEAD).addScaledVector(RAY, Math.max(0.12, best - 0.06));
+  }
+
   // ---------------------------------------------------------------- cámara y bucle
   const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), lookTarget = new THREE.Vector3();
   let acc = 0, first = true;
@@ -366,10 +397,17 @@ export function createRun(st: Stage, mats: Mats, street: Street, hud: Hud, physi
       camPos.z += (want.z - camPos.z) * Math.min(1, rdt * 6);
       lookTarget.set(P.x * 0.85 + 0.6, P.y + 1.15, P.z - 6);
       camLook.lerp(lookTarget, Math.min(1, rdt * 6));
+      clipCamera(P);
     }
     st.view.pos.copy(camPos); st.view.look.copy(camLook);
+    // tensión: temblor leve y continuo que crece con la cercanía de la tormenta
+    if (phase === 'play') {
+      const dg = stormState.danger * stormState.danger;
+      st.view.pos.x += (Math.sin(t * 13.1) * 0.6 + Math.sin(t * 23.7) * 0.4) * 0.05 * dg;
+      st.view.pos.y += (Math.sin(t * 17.3) * 0.6 + Math.sin(t * 29.1) * 0.4) * 0.04 * dg;
+    }
     if (api.cam) { st.view.pos.set(api.cam[0], api.cam[1], P.z + api.cam[2]); st.view.look.set(api.cam[3], api.cam[4], P.z + api.cam[5]); }
-    const fov = aiming ? 44 : 52 + Math.min(6, Math.max(0, Math.hypot(player.vel.x, player.vel.z) - 7) * 0.6);
+    const fov = (aiming ? 44 : 52 + Math.min(6, Math.max(0, Math.hypot(player.vel.x, player.vel.z) - 7) * 0.6)) - 4 * stormState.danger;
     if (Math.abs(st.camera.fov - fov) > 0.05) { st.camera.fov += (fov - st.camera.fov) * Math.min(1, rdt * 5); st.camera.updateProjectionMatrix(); }
 
     // viaje: intensidad psicodélica, barrio, destellos y velocidad
