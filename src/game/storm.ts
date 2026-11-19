@@ -17,10 +17,10 @@ import { createMonsters } from './storm/monsters';
 import { createChase } from './storm/chase';
 
 const QT = {
-  low:    { jaws: 1, tentacles: 2, tseg: 7, chaseCrows: 6, cards: 3,  oct: 3, warp: false, rain: 350,  debris: [10, 6, 4],    crows: 10, colossi: 1, hands: 2, masks: 2, curtain: 1, dust: 60,  splinters: 16, pour: 3 },
-  medium: { jaws: 1, tentacles: 4, tseg: 9, chaseCrows: 12, cards: 5,  oct: 4, warp: false, rain: 1000, debris: [24, 12, 8],   crows: 22, colossi: 2, hands: 3, masks: 3, curtain: 2, dust: 140, splinters: 30, pour: 5 },
-  high:   { jaws: 2, tentacles: 6, tseg: 12, chaseCrows: 20, cards: 8,  oct: 4, warp: true,  rain: 2400, debris: [50, 22, 16],  crows: 40, colossi: 3, hands: 5, masks: 5, curtain: 3, dust: 260, splinters: 50, pour: 7 },
-  ultra:  { jaws: 2, tentacles: 8, tseg: 14, chaseCrows: 32, cards: 12, oct: 5, warp: true,  rain: 5000, debris: [100, 40, 30], crows: 70, colossi: 4, hands: 6, masks: 8, curtain: 4, dust: 420, splinters: 80, pour: 10 },
+  low:    { jaws: 1, tentacles: 6, tseg: 7, chaseCrows: 6, cards: 3,  oct: 3, warp: false, rain: 350,  debris: [10, 6, 4],    crows: 10, colossi: 1, hands: 2, masks: 2, curtain: 1, dust: 60,  splinters: 16, pour: 3 },
+  medium: { jaws: 1, tentacles: 8, tseg: 9, chaseCrows: 12, cards: 5,  oct: 4, warp: false, rain: 1000, debris: [24, 12, 8],   crows: 22, colossi: 2, hands: 3, masks: 3, curtain: 2, dust: 140, splinters: 30, pour: 5 },
+  high:   { jaws: 2, tentacles: 10, tseg: 12, chaseCrows: 20, cards: 8,  oct: 4, warp: true,  rain: 2400, debris: [50, 22, 16],  crows: 40, colossi: 3, hands: 5, masks: 5, curtain: 3, dust: 260, splinters: 50, pour: 7 },
+  ultra:  { jaws: 2, tentacles: 14, tseg: 14, chaseCrows: 32, cards: 12, oct: 5, warp: true,  rain: 5000, debris: [100, 40, 30], crows: 70, colossi: 4, hands: 6, masks: 8, curtain: 4, dust: 420, splinters: 80, pour: 10 },
 } as const;
 
 /** centro X de la calle / compuerta y su Z por defecto */

@@ -70,11 +70,11 @@ const Finish = {
       }
       // ondulación del viaje: la imagen respira y se mece
       float tw = uTrip * (0.7 + 0.3 * sin(uTime * 0.7));
-      suv += vec2(sin(vUv.y * 11.0 + uTime * 1.3) + 0.5 * sin(vUv.y * 27.0 - uTime * 2.1), cos(vUv.x * 9.0 + uTime * 1.1)) * 0.0045 * tw;
+      suv += vec2(sin(uTime * 0.55), cos(uTime * 0.41)) * 0.006 * tw + vec2(sin(vUv.y * 5.0 + uTime * 0.9), 0.0) * 0.0015 * tw;
       vec2 cc = vUv - 0.5;
       float r2 = dot(cc, cc);
-      suv -= cc * r2 * 0.06 * sin(uTime * 0.9) * tw;
-      vec2 ca = cc * r2 * (0.004 + 0.026 * tw * (0.6 + 0.4 * sin(uTime * 2.3)) + 0.02 * uSpeedFx);
+      suv -= cc * r2 * 0.03 * sin(uTime * 0.7) * tw;
+      vec2 ca = cc * r2 * (0.004 + 0.006 * tw + 0.02 * uSpeedFx);
       vec3 c = vec3(texture2D(tDiffuse, suv + ca).r, texture2D(tDiffuse, suv).g, texture2D(tDiffuse, suv - ca).b);
       // destello horizontal
       vec3 streak = vec3(0.0);
@@ -84,6 +84,7 @@ const Finish = {
         streak += max(s - 4.0, 0.0) * (1.0 - abs(f) / 7.0);
       }
       c += min(streak / 13.0, vec3(3.0)) * vec3(0.55, 0.7, 1.15) * 0.22;
+      if (tw > 0.01) c = mix(c, texture2D(tDiffuse, suv + vec2(0.007 * sin(uTime * 0.37), 0.003 * cos(uTime * 0.29)) * tw).rgb, 0.22 * tw);
       // desenfoque radial de velocidad
       if (uSpeedFx > 0.01) {
         vec3 zb = vec3(0.0);
@@ -107,11 +108,10 @@ const Finish = {
       c *= mix(vec3(1.0), vec3(1.04, 1.0, 0.94), smoothstep(0.4, 1.0, l));
       // bioma y viaje: gradación, tono que gira, saturación y arcoíris en las luces
       c *= uTint;
-      c = max(hueRot(c, uHue + tw * 0.55 * sin(uTime * 0.31 + l * 4.0 + vUv.x * 2.0)), 0.0);
+      c = max(hueRot(c, uHue), 0.0);
       float l2 = dot(c, vec3(0.2126, 0.7152, 0.0722));
-      c = mix(vec3(l2), c, 1.0 + 0.45 * tw);
-      c += rainbow(l2 * 1.5 + uTime * 0.07 + vUv.y * 0.6) * smoothstep(0.55, 1.0, l2) * 0.12 * tw;
-      c += rainbow(r2 * 3.0 - uTime * 0.12) * smoothstep(0.12, 0.35, r2) * 0.07 * tw;
+      c = mix(vec3(l2), c, 1.0 + 0.08 * tw);
+      c += c * smoothstep(0.45, 1.0, l2) * vec3(0.16, 0.1, 0.04) * tw;
       c += vec3(1.0, 0.82, 0.55) * uPulse * 0.22 * (1.0 - r2 * 1.5);
       // tormenta: desatura y oscurece, destello frío del rayo, viñeta roja pulsante según la herida
       float ls = dot(c, vec3(0.2126, 0.7152, 0.0722));
@@ -130,7 +130,7 @@ const Finish = {
         float sm = smoothstep(0.62 - 0.22 * uSmoke - 0.05 * uBeat, 0.76, ed) * uSmoke;
         c = mix(c, vec3(0.012, 0.004, 0.02), clamp(sm, 0.0, 0.95));
       }
-      c *= 1.0 - 0.16 * uBeat;
+      c *= 1.0 - 0.04 * uBeat;
       c *= 1.0 - 0.42 * pow(length(cc * vec2(1.05, 1.0)) * 1.32, 2.6);
       c = pow(max(c, 0.0), vec3(1.0 / 2.2));
       float n = fract(sin(dot(gl_FragCoord.xy + fract(uTime) * 61.0, vec2(12.9898, 78.233))) * 43758.5453);

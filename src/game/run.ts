@@ -382,7 +382,7 @@ export function createRun(st: Stage, mats: Mats, street: Street, hud: Hud, physi
     pulse = Math.max(0, pulse - rdt * 1.6); fovKick = Math.max(0, fovKick - rdt * 6);
     const fu = st.post.finish.uniforms;
     if (fu.uTrip) {
-      fu.uTrip.value = trip; fu.uHue.value = hue + Math.sin(t * 0.05) * trip * 0.6; (fu.uTint.value as THREE.Color).copy(tint);
+      fu.uTrip.value = trip; fu.uHue.value = hue + Math.sin(t * 0.05) * trip * 0.06; (fu.uTint.value as THREE.Color).copy(tint);
       fu.uPulse.value = pulse; fu.uSpeedFx.value = THREE.MathUtils.clamp((Math.hypot(player.vel.x, player.vel.z) - 8.5) / 7, 0, 0.85);
     }
     if (fovKick > 0) { st.camera.fov += fovKick * 0.15; st.camera.updateProjectionMatrix(); }

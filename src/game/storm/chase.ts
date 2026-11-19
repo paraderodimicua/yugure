@@ -58,7 +58,7 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
   const tips = new THREE.InstancedMesh(tipG, mats.tint('ceramic', 0x2a2228), Math.max(1, nt));
   segs.frustumCulled = tips.frustumCulled = false; segs.count = nt * S; tips.count = nt;
   root.add(segs, tips);
-  const tents = Array.from({ length: nt }, (_, i) => ({ side: i % 2 ? 1 : -1, ph: r(), per: 3.2 + r() * 2.5, y: 0.4 + r() * 2.2, dz: 1 + r() * 7, len: 5 + r() * 3, rad: 0.32 + r() * 0.15 }));
+  const tents = Array.from({ length: nt }, (_, i) => ({ side: i % 2 ? 1 : -1, ph: r(), per: 3.2 + r() * 2.5, y: i % 2 === 0 ? 3.8 + r() * 3 : 0.6 + r() * 2.4, dz: r() * 14, len: 5 + r() * 3, rad: 0.5 + r() * 0.25 }));
   const pts = Array.from({ length: S + 1 }, () => new THREE.Vector3());
   const Y = new THREE.Vector3(0, 1, 0), dir = new THREE.Vector3();
 
@@ -92,19 +92,20 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
     up.instanceMatrix.needsUpdate = lo.instanceMatrix.needsUpdate = eyes.instanceMatrix.needsUpdate = true;
 
     // tentáculos: se lanzan hacia el jugador pegados a la fachada y se retiran
-    const kT = ss(danger, 0.3, 0.75);
+    const kT = ss(danger, 0.1, 0.5);
     for (let i = 0; i < nt; i++) {
       const tn = tents[i], cyc = (t / tn.per + tn.ph) % 1;
       const reach = kT * ss(cyc, 0.0, 0.35) * (1 - ss(cyc, 0.6, 0.95));
-      const wx = tn.side < 0 ? streetX0 - 0.2 : streetX1 + 0.2;
-      const bz = pz + 8 + tn.dz * 0.4;  // nace por detrás de la cámara
+      // alcance lateral hacia el callejón (sin pasar del centro, donde va la cámara)
+      const wx = tn.side < 0 ? streetX0 - 2.2 : streetX1 + 2.2;
+      const bz = pz + 3 - tn.dz;  // nace dentro de las casas, por delante de la cámara (que va a ~+6,6)
       for (let s = 0; s <= S; s++) {
         const u = s / S, L = (tn.len + 6) * reach * u;
         const curl = Math.sin(u * Math.PI * 0.9) * 1.6 * reach;
         pts[s].set(
-          wx - tn.side * (curl + Math.sin(t * 3 + u * 6 + i) * 0.25 * u),
+          wx - tn.side * Math.min(5.2, (tn.len + 2) * reach * u + curl * 0.5 + Math.sin(t * 3 + u * 6 + i) * 0.25 * u),
           py + tn.y + Math.sin(t * 2.4 + u * 5 + i * 2) * 0.5 * u + u * u * 1.2 * reach,
-          bz - L,
+          bz - L * 0.45,
         );
       }
       for (let s = 0; s < S; s++) {
@@ -131,7 +132,7 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
       dummy.updateMatrix(); crows.setMatrixAt(i, dummy.matrix);
     }
     crows.instanceMatrix.needsUpdate = true;
-    root.visible = danger > 0.25;
+    root.visible = danger > 0.08;
   }
   return { root, update };
 }

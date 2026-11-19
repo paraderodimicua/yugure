@@ -49,8 +49,8 @@ export function createTunnelMesh(mats: Mats, x0: number, x1: number) {
 /** Barrios que se suceden al cruzar túneles: gradación de color, giro de tono y nombre. */
 export const BIOMES: { name: string; sub: string; tint: [number, number, number]; hue: number; trip: number }[] = [
   { name: 'Barrio del atardecer', sub: '', tint: [1, 1, 1], hue: 0, trip: 0 },
-  { name: 'Noche de farolillos', sub: 'el cielo se apaga, los farolillos no', tint: [0.6, 0.66, 1.08], hue: -0.25, trip: 0.1 },
-  { name: 'Jardín de neón', sub: 'los colores se derriten', tint: [0.98, 0.86, 1.12], hue: 1.1, trip: 0.3 },
-  { name: 'Bosque esmeralda', sub: 'todo respira', tint: [0.84, 1.1, 0.94], hue: -0.7, trip: 0.2 },
-  { name: 'Amanecer rosa', sub: 'casi despiertas', tint: [1.12, 0.9, 1.0], hue: 0.4, trip: 0.15 },
+  { name: 'Noche de farolillos', sub: 'el cielo se apaga, los farolillos no', tint: [0.8, 0.84, 1.02], hue: -0.05, trip: 0.1 },
+  { name: 'Jardín de las linternas', sub: 'todo se mece', tint: [1.02, 0.94, 1.04], hue: 0.12, trip: 0.25 },
+  { name: 'Bosque esmeralda', sub: 'todo respira', tint: [0.94, 1.04, 0.96], hue: -0.08, trip: 0.2 },
+  { name: 'Amanecer rosa', sub: 'casi despiertas', tint: [1.06, 0.96, 0.98], hue: 0.05, trip: 0.15 },
 ];
