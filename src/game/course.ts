@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import type { Physics } from './physics';
 import type { Seg } from './street';
 import type { Collider, PlayPiece } from './contracts';
+import { createCamGuard } from './camguard';
 
 type Pieces = { make: Record<string, (o?: any) => PlayPiece>; update(t: number, dt: number): void };
 type Item = { g: PlayPiece; kind: string; used: boolean; z: number };
@@ -14,7 +15,8 @@ function rng(seed: number) {
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
-export function createCourse(pieces: Pieces, physics: Physics, segs: Seg[], L: { oppX: number; runFacadeX: number; backX: number; backY: number }, density = 1, seed = 17) {
+export function createCourse(pieces: Pieces, physics: Physics, segs: Seg[], L: { oppX: number; runFacadeX: number; backX: number; backY: number }, density = 1, seed = 17, cam?: THREE.Object3D) {
+  const guard = cam ? createCamGuard(cam, 0.3, 0.45) : null;
   const root = new THREE.Group();
   const r = rng(seed);
   const pools = new Map<string, Item[]>();
@@ -62,6 +64,7 @@ export function createCourse(pieces: Pieces, physics: Physics, segs: Seg[], L: {
     const cols = (it.g.userData.colliders ?? []) as Collider[];
     if (it.g.userData.moving) physics.addMoving(it.g, cols); else physics.add(it.g, cols, it.g.matrixWorld);
     placed.push(it);
+    guard?.track(it.g, !!it.g.userData.moving);
     return it;
   }
 
@@ -113,14 +116,16 @@ export function createCourse(pieces: Pieces, physics: Physics, segs: Seg[], L: {
       airCursor -= 18 + r() * 14;
     }
     pieces.update(t, dt);
+    guard?.update();
     for (let i = placed.length - 1; i >= 0; i--) {
       const it = placed[i];
-      if (it.z > playerZ + 26) { it.used = false; it.g.visible = false; physics.remove(it.g); placed.splice(i, 1); }
+      if (it.z > playerZ + 26) { guard?.untrack(it.g); it.used = false; it.g.visible = false; physics.remove(it.g); placed.splice(i, 1); }
     }
   }
   function shift(dz: number) {
     for (const it of placed) { it.z += dz; it.g.position.z += dz; it.g.updateMatrixWorld(true); }
     alleyCursor += dz; airCursor += dz; crossCursor += dz;
+    guard?.refresh();
   }
   return { root, update, shift };
 }

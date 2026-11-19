@@ -75,6 +75,8 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
   function update(t: number, player: THREE.Vector3, danger: number, anchorY = player.y, cam: THREE.Vector3 = FAR) {
     const pz = player.z, py = anchorY;
     const nearCam = (p: THREE.Vector3, r: number) => p.distanceToSquared(cam) < r * r;
+    const SEG = new THREE.Line3(), CP = new THREE.Vector3();
+    const segNearCam = (a: THREE.Vector3, b: THREE.Vector3, r: number) => { SEG.set(a, b); SEG.closestPointToPoint(cam, true, CP); return CP.distanceToSquared(cam) < r * r; };
     // fauces: entran desde atrás y por los lados a partir de 0,5 de peligro
     const kJ = ss(danger, 0.5, 0.92);
     for (let i = 0; i < nj; i++) {
@@ -83,9 +85,12 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
       const k = kJ * (nj === 1 ? 1 : 0.85 + 0.15 * Math.sin(t * 0.3 + i));
       const side = nj === 1 ? (Math.floor(t / 14) % 2 ? 1 : -1) : j.side;
       const sc = 13 + 5 * k;
-      dummy.position.set(cx + side * (12.5 - 3 * lunge * k) , py + 11 + 3 * (1 - k) - 2 * lunge, pz + 22 - 50 * k - 6 * lunge);
+      // por fuera de la calle y en alto: se ven asomar sobre los tejados sin acercarse a la cámara
+      dummy.position.set(cx + side * (20 - 2.5 * lunge * k), py + 15 + 3 * (1 - k) - 2 * lunge, pz + 22 - 50 * k - 6 * lunge);
       dummy.lookAt(player.x, py + 1, pz - 6);
-      dummy.scale.setScalar(sc * Math.max(0.001, ss(danger, 0.42, 0.55)));
+      // si aun así quedara cerca de la cámara, se encoge y desaparece en vez de tapar la pantalla
+      const dc = dummy.position.distanceTo(cam), safe = THREE.MathUtils.smoothstep(dc, sc * 0.7, sc * 1.4);
+      dummy.scale.setScalar(sc * Math.max(0.001, ss(danger, 0.42, 0.55) * safe));
       dummy.updateMatrix(); J.copy(dummy.matrix);
       const open = 0.15 + 0.55 * (0.5 + 0.5 * Math.sin(t * 1.7 + j.ph)) * (1 - lunge) + 0.9 * lunge * (cyc < 0.68 ? 1 : 0.2);
       up.setMatrixAt(i, A.copy(J).multiply(B.makeRotationX(-open * 0.6)));
@@ -114,13 +119,14 @@ export function createChase(mats: Mats, su: StormUniforms, q: ChaseQ, streetX0 =
       for (let s = 0; s < S; s++) {
         const a = pts[s], b = pts[s + 1];
         dir.subVectors(b, a); const len = Math.max(0.001, dir.length()); dir.divideScalar(len);
-        const rad = nearCam(a, 3.5) || nearCam(b, 3.5) ? 0.001 : tn.rad * (1 - s / S * 0.75) * Math.min(1, reach * 4);
+        const rad0 = tn.rad * (1 - s / S * 0.75) * Math.min(1, reach * 4);
+        const rad = segNearCam(a, b, rad0 + 2.2) ? 0.001 : rad0;
         _q.setFromUnitVectors(Y, dir);
         segs.setMatrixAt(i * S + s, A.compose(a, _q, _s.set(Math.max(0.001, rad), len, Math.max(0.001, rad))));
       }
       dir.subVectors(pts[S], pts[S - 1]).normalize();
       _q.setFromUnitVectors(Y, dir);
-      tips.setMatrixAt(i, A.compose(pts[S], _q, _s.setScalar(Math.max(0.001, Math.min(1, reach * 3)) * 1.2)));
+      tips.setMatrixAt(i, A.compose(pts[S], _q, _s.setScalar(nearCam(pts[S], 3) ? 0.001 : Math.max(0.001, Math.min(1, reach * 3)) * 1.2)));
     }
     segs.instanceMatrix.needsUpdate = tips.instanceMatrix.needsUpdate = true;
 

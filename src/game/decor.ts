@@ -3,6 +3,7 @@
 // Todo en piscinas pregeneradas que se recolocan al avanzar (sin generar geometría en partida).
 import * as THREE from 'three';
 import type { Vegetation } from '../world/vegetation';
+import { createCamGuard } from './camguard';
 
 type Item = { o: THREE.Object3D; used: boolean; z: number };
 
@@ -13,7 +14,8 @@ function rng(seed: number) {
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
-export function createDecor(veg: Vegetation, L: DecorLayout, seed = 3) {
+export function createDecor(veg: Vegetation, L: DecorLayout, seed = 3, cam?: THREE.Object3D) {
+  const camGuard = cam ? createCamGuard(cam, 0.9, 0.75) : null;
   const root = new THREE.Group();
   const r = rng(seed);
   const pool = (make: (i: number) => THREE.Object3D, n: number): Item[] => {
@@ -50,6 +52,7 @@ export function createDecor(veg: Vegetation, L: DecorLayout, seed = 3) {
     const it = take(p); if (!it) return;
     it.o.position.set(x, y, z); it.o.rotation.y = ry; it.z = z; it.o.updateMatrixWorld(true);
     placed.push({ it, pool: p });
+    if (camGuard && p !== leftHill && p !== rightHill && p !== ivyPatches) camGuard.track(it.o);
   };
 
   let hillCursor = 60, stepCursor = 4;
@@ -73,13 +76,15 @@ export function createDecor(veg: Vegetation, L: DecorLayout, seed = 3) {
     for (let i = placed.length - 1; i >= 0; i--) {
       const { it } = placed[i];
       const reach = it.o === leftHill[0].o || leftHill.includes(it) || rightHill.includes(it) ? TILE / 2 + 20 : 20;
-      if (it.z > playerZ + reach) { it.used = false; it.o.visible = false; placed.splice(i, 1); }
+      if (it.z > playerZ + reach) { camGuard?.untrack(it.o); it.used = false; it.o.visible = false; placed.splice(i, 1); }
     }
     petals.position.set(0, 0, playerZ - 10);
+    camGuard?.update();
   }
   function shift(dz: number) {
     for (const { it } of placed) { it.z += dz; it.o.position.z += dz; it.o.updateMatrixWorld(true); }
     hillCursor += dz; stepCursor += dz;
+    camGuard?.refresh();
   }
   return { root, update, shift };
 }

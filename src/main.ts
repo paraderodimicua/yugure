@@ -32,12 +32,12 @@ const street = createStreet(st.U, mats, kit, 7, dresser.dress, physics);
 street.setAhead(Q.ahead); street.setLodFar(Q.lodFar);
 const garlands = createGarlands(props, { x0: 2.4, x1: OPP_X });
 const veg = createVegetation(st.U, mats);
-const decor = createDecor(veg, { backX: BACK_X, backY: BACK_Y, oppX: OPP_X, wallFaceX: BACK_X + 1.2 + 2 });
+const decor = createDecor(veg, { backX: BACK_X, backY: BACK_Y, oppX: OPP_X, wallFaceX: BACK_X + 1.2 + 2 }, 3, st.camera);
 const npcs = createNPCs(st.U, mats);
 const folk = createFolk(npcs, { oppX: OPP_X, runFacadeX: 2.4 });
 st.onTick((t, dt) => { veg.update(t, dt); npcs.update(t, dt); props.update(t, dt); });
 const pieces = createPieces(st.U, mats, props);
-const course = createCourse(pieces as any, physics, street.segs, { oppX: OPP_X, runFacadeX: 2.4, backX: BACK_X, backY: BACK_Y }, Q.density);
+const course = createCourse(pieces as any, physics, street.segs, { oppX: OPP_X, runFacadeX: 2.4, backX: BACK_X, backY: BACK_Y }, Q.density, 17, st.camera);
 
 const storm = createStorm(st, mats, kit, quality);
 createRun(st, mats, street, hud, physics, [
