@@ -10,6 +10,7 @@ CONTROLES
   Clic en el aire ....... impulso apuntado con el ratón, a cámara lenta (uno por salto)
   Contra un borde ....... te cuelgas; Espacio o empujar hacia la pared = subir
   Llegar corriendo ...... superas el borde de un salto y sales con impulso
+  Contra un muro ........ Espacio al tocarlo = rebote (con W hacia delante, si no hacia donde apuntes)
   Esc ................... calidad gráfica (Bajo / Medio / Alto / Ultra)
   P ..................... foto
 

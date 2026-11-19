@@ -60,7 +60,8 @@ export function createRun(st: Stage, mats: Mats, street: Street, hud: Hud, physi
   const NATIVE_BONG = NATIVE.has('bong');
   const player = createPlayer(physics, {
     baseGround: (x) => (x < WALL_X ? BACK_Y : 0),
-    clampX: (x) => THREE.MathUtils.clamp(x, -30, 21),
+    // el ancho de la calle con sus tejados y la terraza: más allá solo hay bosque lejano de decorado
+    clampX: (x) => THREE.MathUtils.clamp(x, -13.5, 15),
     wallX: WALL_X, wallTop: BACK_Y,
   }, climbT, {
     hangDrop: (Char as any).HANG_DROP ?? 1.75, hangWall: (Char as any).HANG_WALL ?? 0.38,
@@ -169,6 +170,7 @@ export function createRun(st: Stage, mats: Mats, street: Street, hud: Hud, physi
     for (const e of player.st.events) {
       const p = V.copy(player.pos);
       if (e.type === 'land') fx.emit({ pos: p.setY(p.y + 0.05), count: Math.round(8 + e.power * 14), color: 0xd9c2a0, speed: 1.6 + e.power * 2, up: 0.6, size: 0.15, life: 0.7, gravity: 0.6, spread: 0.5 });
+      if (e.type === 'walljump') { pulse = Math.max(pulse, 0.3); flowT += 0.5; fx.emit({ pos: V.copy(player.pos).setY(player.pos.y + 1), count: 14, color: 0xe8d8c0, speed: 2.2, up: 0.4, size: 0.12, life: 0.5, gravity: 0.6 }); }
       if (e.type === 'jump' || e.type === 'djump') fx.emit({ pos: p.setY(p.y + 0.05), count: e.type === 'djump' ? 16 : 7, color: e.type === 'djump' ? 0xffe6c0 : 0xd9c2a0, glow: e.type === 'djump', speed: 1.4, up: 0.4, size: 0.11, life: 0.5, gravity: 0.4 });
       if (e.type === 'bounce') fx.emit({ pos: p, count: 24, color: 0xffb0c0, glow: true, speed: 3, up: 1.2, size: 0.1, life: 0.7, gravity: 1 });
       if (e.type === 'perfect') { pulse = 0.8; fovKick = 4; flowT += 2; hud.toast('¡Salto perfecto!', '', 900); fx.emit({ pos: V.copy(player.pos).setY(player.pos.y + 1.6), count: 26, color: 0xfff0c0, glow: true, speed: 4, up: 1, size: 0.1, life: 0.6, gravity: 0.5 }); }

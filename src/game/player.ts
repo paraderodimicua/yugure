@@ -29,8 +29,9 @@ export function createPlayer(phys: Physics, env: Env, climbT: number, rig: Rig =
     swing: null as null | { bar: WBar; anchor: THREE.Vector3; d: THREE.Vector3; a: number; w: number },
     dashT: 0, dashCharges: 1, dashCd: 0, grabCd: 0, swingCd: 0,
     aim: new THREE.Vector3(0, 0, -1),
-    events: [] as { type: 'land' | 'jump' | 'bounce' | 'grab' | 'climb' | 'dash' | 'swing' | 'release' | 'djump' | 'vault' | 'perfect'; power: number }[],
+    events: [] as { type: 'land' | 'jump' | 'bounce' | 'grab' | 'climb' | 'dash' | 'swing' | 'release' | 'djump' | 'vault' | 'perfect' | 'walljump'; power: number }[],
     climbRate: 1, boostT: 0,
+    wall: { n: new THREE.Vector3(), t: 9 },
   };
   let up: Upgrades = { ...BASE_UP };
   const go = (m: PMode) => { if (st.mode !== m) { st.mode = m; st.modeTime = 0; } };
@@ -129,6 +130,14 @@ export function createPlayer(phys: Physics, env: Env, climbT: number, rig: Rig =
     } else { vel.set(0, 0, 0); go('idle'); }
   }
 
+  /** Dirección horizontal de un salto desde un muro o borde. away: normal que se aleja de la pared. */
+  function jumpDir(inp: Input, away: THREE.Vector3, out: THREE.Vector3) {
+    if (inp.z < -0.3 && Math.abs(inp.x) < 0.3) out.set(0, 0, -1).addScaledVector(away, 0.35);
+    else if (Math.abs(inp.x) > 0.2 || Math.abs(inp.z) > 0.2) out.set(inp.x, 0, inp.z).normalize().addScaledVector(away, 0.3);
+    else out.copy(away);
+    out.y = 0; return out.normalize();
+  }
+
   function doJump(power = 1) {
     vel.y = JUMP * up.jumpMul * power; st.grounded = false; st.coyote = 0; st.buffer = 0; go('jump'); emit('jump', power);
   }
@@ -172,7 +181,8 @@ export function createPlayer(phys: Physics, env: Env, climbT: number, rig: Rig =
         // salto perfecto: pulsar salto justo al agarrarse impulsa por encima del borde
         st.buffer = 0; st.hang = null;
         pos.y = h.top - HANG_DROP + 0.6;
-        vel.set(-h.n.x * 10.5, JUMP * 0.85, -h.n.z * 10.5);
+        const into = N.set(-h.n.x, 0, -h.n.z), d = jumpDir(inp, into, C);
+        vel.set(d.x * 10.5, JUMP * 0.85, d.z * 10.5);
         st.grounded = false; st.boostT = 1.1; st.grabCd = 0.3; go('jump'); emit('perfect');
       } else if (st.buffer > 0 || (towards > 0.5 && st.modeTime > 0.18)) {
         st.buffer = 0;
@@ -234,6 +244,12 @@ export function createPlayer(phys: Physics, env: Env, climbT: number, rig: Rig =
       vel.z += (wish.z - vel.z) * Math.min(1, ACC_A * dt / Math.max(1, hs * 0.5));
     }
 
+    // salto desde un muro: tocaste una pared en el aire hace un instante
+    if (inp.jumpPressed && !st.grounded && st.wall.t < 0.2 && st.dashT <= 0) {
+      const d = jumpDir(inp, st.wall.n, C);
+      vel.x = d.x * 8.8; vel.z = d.z * 8.8; vel.y = JUMP * up.jumpMul * 0.95;
+      st.wall.t = 9; st.buffer = 0; st.boostT = Math.max(st.boostT, 0.35); go('jump'); emit('walljump');
+    }
     // salto, doble salto
     const canGround = st.grounded || st.coyote > 0;
     if (st.buffer > 0 && canGround) doJump();
@@ -250,9 +266,16 @@ export function createPlayer(phys: Physics, env: Env, climbT: number, rig: Rig =
 
     // integración por ejes con colisión
     pos.x += vel.x * dt; pos.x = env.clampX(pos.x);
+    const vx0 = vel.x, vz0 = vel.z;
     const hx = collideAxis('x');
     pos.z += vel.z * dt;
     const hz = collideAxis('z');
+    st.wall.t += dt;
+    if (!st.grounded && (hx || hz)) {
+      // normal que se aleja de la pared, según el lado por el que chocamos
+      st.wall.n.set(hx ? -Math.sign(vx0 || 1) : 0, 0, hz ? -Math.sign(vz0 || 1) : 0).normalize();
+      st.wall.t = 0;
+    }
     pos.y += vel.y * dt;
 
     // techo

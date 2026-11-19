@@ -57,8 +57,8 @@ export function createDecor(veg: Vegetation, L: DecorLayout, seed = 3) {
     let guard = 0;
     while (hillCursor > playerZ - 200 && guard++ < 6) {
       const z = hillCursor - TILE / 2;
-      put(leftHill, L.backX - 52, L.backY, z);
-      put(rightHill, L.oppX + 52, 0, z);
+      put(leftHill, L.backX - 62, L.backY, z);
+      put(rightHill, L.oppX + 62, 0, z);
       hillCursor -= TILE;
     }
     while (stepCursor > playerZ - 110 && guard++ < 40) {

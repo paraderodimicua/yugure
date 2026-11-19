@@ -14,6 +14,7 @@ Parkour por los tejados de una aldea japonesa infinita, medio tragada por la jun
 | Espacio | Saltar (mantener = más alto) |
 | Clic en el aire | Impulso a cámara lenta hacia el cursor (uno por salto) |
 | Contra un borde | Te cuelgas; Espacio justo al agarrarte = salto perfecto |
+| Contra un muro en el aire | Espacio = rebote: con W hacia delante, si no hacia donde apuntes |
 | Esc | Calidad gráfica: Bajo, Medio, Alto, Ultra |
 | P | Foto |
 
