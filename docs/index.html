@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="YŪGURE: parkour por los tejados de una aldea japonesa infinita, perseguido por una tormenta. Alpha jugable en el navegador.">
+<meta property="og:title" content="YŪGURE · alpha 0.3">
+<meta property="og:image" content="hero.jpg">
+<title>YŪGURE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+
+/* Una noche de tormenta sobre la aldea: el atardecer resiste en el acento. Un solo tema, oscuro a propósito. */
+:root {
+  --night: #120d1f;
+  --night-2: #1c1430;
+  --ink: #f6ece0;
+  --mist: #b9aecb;
+  --dusk: #ff8c42;
+  --torii: #e2412b;
+  --lantern: #ffd08a;
+  --line: rgba(246, 236, 224, .14);
+  --display: "Shippori Mincho B1", "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  --body: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "DM Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+html { background: var(--night); }
+body { background: var(--night); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.6; }
+a { color: inherit; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+
+/* ---------- héroe ---------- */
+.hero { position: relative; overflow: hidden; isolation: isolate; border-bottom: 1px solid var(--line); }
+.hero img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; z-index: -3; transform: scale(1.04); animation: drift 26s ease-in-out infinite alternate; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -2;
+  background: linear-gradient(180deg, rgba(18,13,31,.15) 0%, rgba(18,13,31,.35) 40%, rgba(18,13,31,.92) 82%, var(--night) 100%),
+              linear-gradient(90deg, rgba(18,13,31,.85) 0%, rgba(18,13,31,.2) 55%, rgba(18,13,31,0) 100%); }
+.hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.hero .wrap { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; padding-block: clamp(90px, 16vw, 190px) clamp(40px, 6vw, 70px); }
+.hero .copy { min-width: 0; display: grid; gap: 18px; max-width: 640px; }
+.badge { justify-self: start; font-family: var(--mono); font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--lantern); border: 1px solid rgba(255,208,138,.4); border-radius: 999px; padding: 5px 12px; background: rgba(18,13,31,.55); }
+h1 { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(64px, 13vw, 150px); line-height: .9; letter-spacing: .02em; text-wrap: balance;
+  background: linear-gradient(175deg, var(--ink) 30%, var(--lantern) 70%, var(--dusk)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 30px rgba(255,140,66,.25)); }
+.tag { margin: 0; font-size: clamp(18px, 2.3vw, 23px); line-height: 1.45; color: var(--ink); text-wrap: balance; max-width: 30ch; }
+.kanji { writing-mode: vertical-rl; font-family: var(--display); font-weight: 800; font-size: clamp(54px, 9vw, 112px); line-height: 1; color: var(--torii); text-shadow: 0 0 40px rgba(226,65,43,.45); letter-spacing: .05em; user-select: none; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 10px; font-family: var(--body); font-weight: 700; font-size: 17px; letter-spacing: .02em; text-decoration: none; border-radius: 14px; padding: 15px 26px; cursor: pointer; border: 0; transition: transform .15s ease, box-shadow .2s ease, background .2s ease; }
+.btn:focus-visible { outline: 3px solid var(--lantern); outline-offset: 3px; }
+.play { color: #1a0e08; background: linear-gradient(180deg, #ffb06a, var(--dusk)); box-shadow: 0 10px 40px rgba(255,140,66,.45), inset 0 1px 0 rgba(255,255,255,.5); }
+.play:hover { transform: translateY(-2px); box-shadow: 0 16px 50px rgba(255,140,66,.6), inset 0 1px 0 rgba(255,255,255,.5); }
+.play svg { width: 18px; height: 18px; }
+.dl { color: var(--ink); background: rgba(246,236,224,.08); border: 1px solid var(--line); }
+.dl:hover { background: rgba(246,236,224,.14); }
+.dl[disabled] { opacity: .5; cursor: default; }
+.note { font-size: 13px; color: var(--mist); min-height: 1.4em; margin: 0; }
+
+/* ---------- capturas ---------- */
+.shots { padding-block: 56px 20px; }
+.reel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.reel figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.reel img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block; }
+.reel figcaption { font-size: 14px; color: var(--mist); }
+.reel figcaption b { display: block; color: var(--ink); font-weight: 700; font-size: 15px; }
+
+/* ---------- lo que te espera ---------- */
+section h2 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); margin: 0 0 22px; letter-spacing: .01em; text-wrap: balance; }
+.feats { padding-block: 48px; }
+.flist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; }
+.f { display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: start; padding-block: 18px; border-top: 1px solid var(--line); min-width: 0; }
+.f .k { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1; color: var(--dusk); text-align: center; }
+.f h3 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
+.f p { margin: 0; color: var(--mist); font-size: 15px; }
+
+/* ---------- controles ---------- */
+.controls { padding-block: 8px 56px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; }
+.keys { display: grid; gap: 10px; }
+.row { display: grid; grid-template-columns: 210px 1fr; gap: 14px; align-items: center; padding-block: 8px; border-bottom: 1px dashed var(--line); }
+.row span:last-child { color: var(--mist); font-size: 15px; }
+kbd { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--ink); background: var(--night-2); border: 1px solid rgba(246,236,224,.22); border-bottom-width: 3px; border-radius: 7px; padding: 3px 8px; margin-right: 4px; white-space: nowrap; }
+.status { background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 22px 22px 18px; display: grid; gap: 12px; align-self: start; }
+.status h3 { margin: 0; font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--lantern); }
+.status ul { margin: 0; padding-left: 18px; color: var(--mist); font-size: 15px; display: grid; gap: 6px; }
+.status p { margin: 0; font-size: 14px; color: var(--mist); }
+.status strong { color: var(--ink); font-weight: 500; }
+
+footer { border-top: 1px solid var(--line); padding-block: 26px 40px; color: var(--mist); font-size: 13px; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+footer .jp { font-family: var(--display); color: var(--ink); }
+
+@keyframes drift { from { transform: scale(1.04) translate3d(0,0,0); } to { transform: scale(1.1) translate3d(-1.5%, -1%, 0); } }
+
+@media (max-width: 860px) {
+  .reel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flist, .controls { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .kanji { display: none; }
+  .row { grid-template-columns: 1fr; gap: 4px; }
+  .btn { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .hero img.bg { animation: none; } .btn { transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <img class="bg" src="hero.jpg" alt="El protagonista corre por los tejados de la aldea entre farolillos y sombrillas, bajo un cielo de tormenta violeta">
+  <canvas id="petals" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="copy">
+      <span class="badge">Alpha 0.3 · se juega en el navegador</span>
+      <h1>YŪGURE</h1>
+      <p class="tag">Corre por los tejados de una aldea japonesa que no termina nunca. La tormenta ya salió de la compuerta y viene detrás.</p>
+      <div class="cta">
+        <a class="btn play" href="jugar.html" id="play">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>
+          Jugar ahora
+        </a>
+        <button class="btn dl" id="dl" type="button">Descargar · 1 MB</button>
+      </div>
+      <p class="note" id="note">Sin instalar nada. Teclado y ratón.</p>
+    </div>
+    <div class="kanji" aria-hidden="true">夕暮れ</div>
+  </div>
+</header>
+
+<main>
+  <section class="shots wrap" aria-label="Capturas del juego">
+    <div class="reel">
+      <figure><img src="s_bong.jpg" alt="El protagonista da una calada al bong en el callejón antes de empezar" loading="lazy"><figcaption><b>La calada</b>Antes de correr. De ahí sale la oscuridad.</figcaption></figure>
+      <figure><img src="s_gate.jpg" alt="La compuerta de madera gigante revienta y salen la tormenta y colosos de sombra" loading="lazy"><figcaption><b>La compuerta</b>Revienta, y la tormenta sale detrás de ti.</figcaption></figure>
+      <figure><img src="s_tunnel.jpg" alt="Túnel de torii bermellón con farolillos sobre el callejón" loading="lazy"><figcaption><b>Senbon torii</b>Al cruzarlo cambias de barrio y ganas aire.</figcaption></figure>
+      <figure><img src="s_pillars.jpg" alt="Columnas de jade con capitel dorado que brotan delante de los tejados" loading="lazy"><figcaption><b>Columnas del cielo</b>Salta de una a otra y multiplica tus puntos.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="feats wrap">
+    <h2>Lo que te espera</h2>
+    <div class="flist">
+      <div class="f"><div class="k" aria-hidden="true">嵐</div><div><h3>La tormenta te persigue</h3><p>Fauces y garras de sombra asoman por los tejados. Te quita vida si te alcanza, y avisa antes de acelerar.</p></div></div>
+      <div class="f"><div class="k" aria-hidden="true">流</div><div><h3>Flujo</h3><p>Encadena saltos sin tocar el suelo de la calle y corres cada vez más rápido, hasta FLUJO V. Caer lo rompe.</p></div></div>
+      <div class="f"><div class="k" aria-hidden="true">跳</div><div><h3>Parkour libre</h3><p>Tejados, vigas entre casas, andamios de bambú, sombrillas que rebotan según tu velocidad y bordes que superas sin frenar.</p></div></div>
+      <div class="f"><div class="k" aria-hidden="true">翔</div><div><h3>Impulso apuntado</h3><p>En el aire, mantén el clic: el tiempo se ralentiza y apuntas con el ratón. Uno por salto.</p></div></div>
+      <div class="f"><div class="k" aria-hidden="true">夢</div><div><h3>El viaje</h3><p>La imagen respira y los colores derriten. Más intenso cuanto más fluyes y dentro de los túneles.</p></div></div>
+      <div class="f"><div class="k" aria-hidden="true">技</div><div><h3>Mejoras cada 150 m</h3><p>Doble salto, planeo, doble impulso, más velocidad y piel contra la tormenta. Duran toda la partida.</p></div></div>
+    </div>
+  </section>
+
+  <section class="controls wrap" aria-label="Controles y estado">
+    <div>
+      <h2>Controles</h2>
+      <div class="keys">
+        <div class="row"><span><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> o <kbd>WASD</kbd></span><span>Moverte en cualquier dirección</span></div>
+        <div class="row"><span><kbd>Espacio</kbd></span><span>Saltar. Mantener para saltar más alto</span></div>
+        <div class="row"><span><kbd>Clic</kbd> en el aire</span><span>Impulso a cámara lenta hacia el cursor</span></div>
+        <div class="row"><span>Contra un borde</span><span>Te cuelgas. <kbd>Espacio</kbd> justo al agarrarte: salto perfecto</span></div>
+        <div class="row"><span><kbd>Esc</kbd></span><span>Calidad gráfica: Bajo, Medio, Alto o Ultra</span></div>
+        <div class="row"><span><kbd>P</kbd></span><span>Foto</span></div>
+      </div>
+    </div>
+    <aside class="status">
+      <h3>Estado de la alpha</h3>
+      <p><strong>Jugable de principio a fin:</strong> intro, carrera infinita, tormenta con vida, túneles, potenciadores y récord.</p>
+      <p>En camino:</p>
+      <ul>
+        <li>Portal a la dimensión oscura, con proyectiles</li>
+        <li>Dragones sobre los que correr</li>
+        <li>Música y sonido</li>
+      </ul>
+      <p>Necesita un navegador con WebGL2. En gráficas integradas elige calidad Baja con <kbd>Esc</kbd>. La primera carga tarda unos segundos más.</p>
+    </aside>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><span><span class="jp">夕暮れ</span> · YŪGURE alpha 0.3</span><span>Un juego original en desarrollo</span></div>
+</footer>
+
+<script>
+// Pétalos y ceniza cayendo sobre el héroe (se detiene con reduced motion o fuera de vista).
+(() => {
+  const cv = document.getElementById('petals'), cx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W = 0, H = 0, dpr = Math.min(devicePixelRatio || 1, 2), ps = [], run = true;
+  function size() { const r = cv.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  function seed() { ps = Array.from({ length: Math.round(W / 22) }, () => mk(true)); }
+  function mk(any) { return { x: Math.random() * W, y: any ? Math.random() * H : -10, s: 2 + Math.random() * 4, v: 0.25 + Math.random() * 0.7, w: Math.random() * 6.28, ash: Math.random() < 0.35 }; }
+  function draw() {
+    cx.clearRect(0, 0, W, H);
+    for (const p of ps) {
+      p.y += p.v; p.x += Math.sin(p.w += 0.012) * 0.5 - 0.15;
+      if (p.y > H + 10 || p.x < -10) Object.assign(p, mk(false), { x: Math.random() * W * 1.1 });
+      cx.save(); cx.translate(p.x, p.y); cx.rotate(p.w);
+      cx.fillStyle = p.ash ? 'rgba(40,24,60,.55)' : 'rgba(255,190,205,.75)';
+      cx.beginPath(); cx.ellipse(0, 0, p.s, p.s * 0.55, 0, 0, 6.283); cx.fill(); cx.restore();
+    }
+    if (run) requestAnimationFrame(draw);
+  }
+  size(); seed();
+  if (!reduce) { draw(); new IntersectionObserver(([e]) => { const was = run; run = e.isIntersecting; if (run && !was) draw(); }).observe(cv); }
+  addEventListener('resize', () => { size(); seed(); });
+})();
+
+// Descarga del juego (un único .html) mediante el visor (con confirmación). Si este visor no la permite, se oculta.
+(() => {
+  const btn = document.getElementById('dl'), note = document.getElementById('note');
+  if (!(window.claude && window.claude.use)) {
+    const a = document.createElement('a'); a.className = btn.className; a.textContent = btn.textContent;
+    a.href = 'jugar.html'; a.download = 'YUGURE-alpha-0.3.html'; btn.replaceWith(a);
+    a.addEventListener('click', () => { note.textContent = 'Ábrelo con doble clic en Chrome, Edge o Firefox. Funciona sin internet.'; });
+    return;
+  }
+  btn.hidden = true;
+  const use = window.claude && window.claude.use ? window.claude.use('downloads') : Promise.resolve(null);
+  use.then((downloads) => {
+    if (!downloads) return;
+    btn.hidden = false;
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; note.textContent = 'Preparando la descarga…';
+      try {
+        const res = await fetch('jugar.html');
+        if (!res.ok) throw { code: 'missing' };
+        await downloads.save({ filename: 'YUGURE-alpha-0.3.html', data: await res.blob() });
+        note.textContent = 'Ábrelo con doble clic en Chrome, Edge o Firefox. Funciona sin internet.';
+      } catch (e) {
+        const code = e && e.code;
+        note.textContent = code === 'declined' ? 'Descarga cancelada.' : code === 'rate_limited' ? 'Espera un momento y vuelve a intentarlo.' : 'Este visor no permite la descarga. Pulsa «Jugar ahora».';
+      } finally { btn.disabled = false; }
+    });
+  }).catch(() => {});
+})();
+</script>
+</body>
+</html>
